@@ -34,7 +34,8 @@ Create admin user for web interface
 <img width="983" height="754" alt="Screenshot 2026-02-07 162756" src="https://github.com/user-attachments/assets/2491e190-b47f-4c65-9b44-7f93c0acc6a2" />
 
 #### Verify Docker is running:  
-`docker ps` should show Active (running)  
+`systemctl status docker` should show Active (running) - "Is the power plant on?"  
+`docker ps` checks containers are running inside docker. - "Are the factories inside operating?"  
 ![IMG-20260211-WA0016](https://github.com/user-attachments/assets/1ef27cbc-d88d-4db1-b09a-a9dbadb3b261)
 
 #### Accessing the Dashboard  
@@ -80,11 +81,76 @@ Performed brute-force attacks from Kali Linux:
 
 --- 
 
+## <ins>UFW Firewall Configuration - Explanation</ins>  
+![IMG-20260212-WA0001](https://github.com/user-attachments/assets/8da9dc4f-a0c4-4c13-a88c-68a6727cdbc4)
+
+### <ins>Firewall Status</ins>  
+Status: active    
+Default: deny (incoming), allow (outgoing), deny (routed)  
+
+### <ins>Meaning</ins>
+
+- **Incoming traffic** → Blocked by default unless explicitly allowed.
+- **Outgoing traffic** → Allowed by default.
+- **Routed traffic** → Blocked (no forwarding between interfaces).
+- **Logging** → Enabled (low level).
+
+> This is a secure baseline configuration.
+
+---
+
+## <ins>Incoming Allowed Ports</ins>
+
+| Port | Service | Description |
+|------|---------|-------------|
+| 21   | FTP     | File Transfer Protocol |
+| 22   | SSH     | Secure Shell (remote access) |
+| 23   | Telnet  | Remote login (insecure) |
+| 80   | HTTP    | Web traffic |
+| 443  | HTTPS   | Secure web traffic |
+| 3306 | MySQL   | Database access |
+| 3389 | RDP     | Remote Desktop Protocol |
+| 64297 | Custom | Allowed only from <ins>192.168.X.X</ins> |
+
+## <ins>Restricted Access Rules</ins>  
+64297 ALLOW IN 192.168.X.X
+22 ALLOW IN 192.168.X.X
+> These rules allow only the IP `<ins>192.168.X.X</ins>` to access:  
+> - SSH (22)  
+> - Custom port (64297)  
+> Typically the host machine or Kali VM.
+
+## <ins>IPv6 Rules</ins>  
+> Entries marked with `(v6)` apply to IPv6 traffic.
+
+- `22 (v6)` → SSH open for IPv6  
+- `80 (v6)` → HTTP open for IPv6  
+
+## <ins>Outgoing Rules</ins>  
+Explicitly allowed:
+
+| Port | Service |
+|------|---------|
+| 80   | HTTP    |
+| 443  | HTTPS   |
+| 53   | DNS     |
+
+> Note: Outgoing traffic is already allowed by default.
+
+## <ins>Security Context (T-Pot Honeypot)</ins>  
+- Multiple high-risk ports are intentionally open.  
+- The system is designed to attract attackers.  
+- Default deny incoming provides baseline control.  
+> ⚠️ **Important:**   This configuration would be dangerous in a production server environment.
+
+---
+
 ## <ins>Summary</ins>
 - Honeypots successfully captured attacker activity  
 - Elasticsearch stored logs reliably  
 - Kibana allowed detailed analysis and correlation  
-- Attack Map provided visualization  
+- Attack Map provided visualization
+- Configured UFW Firewall to secure the honeypot while still allowing intentional exposure to attackers
 
 ### Outcome:
-End-to-end deployment, attack simulation, and telemetry analysis achieved with T-Pot, demonstrating hands-on experience with modern honeypot-based threat detection and SOC monitoring.
+End-to-end deployment, attack simulation, and telemetry analysis achieved with T-Pot, combined with a secure <ins>UFW firewall baseline</ins> to control inbound/outbound traffic. Demonstrated hands-on experience with modern honeypot-based threat detection, SOC monitoring, and secure lab configuration for controlled attacker interaction.
